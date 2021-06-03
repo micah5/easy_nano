@@ -1,6 +1,6 @@
 # easy_nano
 
-Send and receive nano (without having to understand the nano protocol). Built on top of [nanolib]().
+Send and receive nano (without having to understand the nano protocol). Built on top of [nanolib](https://github.com/Matoking/nanolib).
 
 ## Installation
 
@@ -27,9 +27,9 @@ acc.send("nano_1zfnwwk5xq74tddsq9t13oemxfkyqhz6f6jzej3wfqe4q3y39381qtq98dmo", 0.
 ### Cli
 
 ```bash
-// processes any pending blocks
+# processes any pending blocks
 easy_nano receive
 
-// sends nano to address (input via stdin)
+# sends nano to address (input via stdin)
 easy_nano send
 ```
