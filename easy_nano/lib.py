@@ -1,3 +1,4 @@
+import decimal
 import json
 import warnings
 from typing import Optional, Dict
@@ -11,8 +12,6 @@ from nanolib import (
     accounts,
     units,
 )
-
-import decimal
 
 ctx = decimal.Context()
 ctx.prec = 20
@@ -68,7 +67,7 @@ class Account:
         )
         return data
 
-    def recieve(self, count: Optional[int] = 5):
+    def receive(self, count: Optional[int] = 5):
         data = self._call_node_url(
             {"action": "pending", "account": self.public_address, "count": count}
         )
@@ -82,8 +81,8 @@ class Account:
             # contents = json.loads(block_info["contents"])
             account_info = self._get_account_info(self.public_address)
             total_amount = amount + int(account_info["balance"])
-            print(f"Recieved {mnano_amount} nano from {block_addr}. Processing...")
-            block_hash = self._recieve_block(block_hash, total_amount, is_raw=True)
+            print(f"Received {mnano_amount} nano from {block_addr}. Processing...")
+            block_hash = self._receive_block(block_hash, total_amount, is_raw=True)
             ret_data[block_addr] = {
                 "amount": mnano_amount,
                 "hash": block_hash,
@@ -117,7 +116,7 @@ class Account:
         if not block.complete:
             raise Exception("Block not ready to be broadcast")
 
-    def _recieve_block(self, link: str, amount: float, is_raw: bool = False):
+    def _receive_block(self, link: str, amount: float, is_raw: bool = False):
         previous = self._get_previous_block_hash()
         amount = amount if is_raw else self._get_raw_amount(amount)
         block = Block(

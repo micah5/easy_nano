@@ -3,7 +3,7 @@ import time
 
 import click
 import pyqrcode
-from easy_nano import Account, generate_seed
+from lib import Account, generate_seed
 
 SEED_PATH = os.getenv("SEED_PATH", "seed")
 
@@ -27,12 +27,12 @@ def main(ctx, seed):
 
 @main.command()
 @click.pass_obj
-def recieve(account):
+def receive(account):
     """waits for new nano at account address"""
     qr = pyqrcode.create(account.public_address)
     print(qr.terminal(quiet_zone=1))
     while True:
-        res = account.recieve()
+        res = account.receive()
         if res:
             print(res)
             return
