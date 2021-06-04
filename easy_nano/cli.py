@@ -3,7 +3,7 @@ import time
 
 import click
 import pyqrcode
-from easy_nano.lib import Account, generate_seed
+from lib import Account, generate_seed
 
 SEED_PATH = os.getenv("SEED_PATH", "seed")
 

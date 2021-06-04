@@ -3,13 +3,13 @@ from distutils.core import setup
 setup(
     name="easy_nano",
     packages=["easy_nano"],
-    version="1",
+    version="2",
     license="MIT",
     description="Send & recieve nano without the fuss",
     author="Micah Price",
     author_email="98mprice@gmail.com",
     url="https://github.com/micah5",
-    download_url="https://github.com/micah5/easy_nano/archive/refs/tags/v_1.tar.gz",
+    download_url="https://github.com/micah5/easy_nano/archive/refs/tags/v_2.tar.gz",
     keywords=["nano"],
     install_requires=["requests", "PyQRCode", "click", "nanolib"],
     classifiers=[

@@ -62,9 +62,12 @@ class Account:
         return data
 
     def _get_account_info(self, account_address: str):
-        data = self._call_node_url(
-            {"action": "account_info", "account": account_address}
-        )
+        try:
+            data = self._call_node_url(
+                {"action": "account_info", "account": account_address}
+            )
+        except Exception as e:
+            data = {"balance": 0}
         return data
 
     def receive(self, count: Optional[int] = 5):
@@ -78,7 +81,6 @@ class Account:
             amount = int(block_info["amount"])
             mnano_amount = self._get_mnano_amount(amount)
             # todo: implement proper logging
-            # contents = json.loads(block_info["contents"])
             account_info = self._get_account_info(self.public_address)
             total_amount = amount + int(account_info["balance"])
             print(f"Received {mnano_amount} nano from {block_addr}. Processing...")
@@ -156,6 +158,8 @@ class Account:
         amount = amount if is_raw else self._get_raw_amount(amount)
         account_info = self._get_account_info(self.public_address)
         account_balance = int(account_info["balance"])
+        if account_balance == 0:
+            raise Exception(f"Account {self.public_address} has no nano avaliable")
         total_amount = account_balance - amount
         if total_amount < 0:
             raise Exception(
