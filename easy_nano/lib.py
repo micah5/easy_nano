@@ -97,7 +97,6 @@ class Account:
             "block": block_dict,
             "json_block": True,
         }
-        print(data)
         res = requests.post(self.node_url, json=data)
         data = res.json()
         if "hash" not in data:
@@ -155,12 +154,19 @@ class Account:
     def send(self, address: str, amount: float, is_raw=False):
         previous = self._get_previous_block_hash()
         amount = amount if is_raw else self._get_raw_amount(amount)
+        account_info = self._get_account_info(self.public_address)
+        account_balance = int(account_info["balance"])
+        total_amount = account_balance - amount
+        if total_amount < 0:
+            raise Exception(
+                f"Account {self.public_address} only has {self._get_mnano_amount(account_balance)} nano avaliable"
+            )
         block = Block(
             block_type="state",
             account=self.public_address,
             representative=self.representative,
             previous=previous,
-            balance=amount,
+            balance=total_amount,
             link_as_account=address,
         )
         self._prepare_block(block)
