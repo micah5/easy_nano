@@ -5,7 +5,7 @@ Send and receive nano (without having to understand the nano protocol). Built on
 ## Installation
 
 ```
-pip install easy_nano
+pip install easy-nano
 ```
 
 ## Usage
