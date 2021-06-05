@@ -48,6 +48,3 @@ def send(account, address, amount):
     print("Processing...")
     res = account.send(address, float(amount))
     print(res)
-
-
-main()
