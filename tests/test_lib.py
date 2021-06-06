@@ -12,7 +12,6 @@ def _process_block(self, block, subtype):
 
 
 def _call_node_url(self, payload):
-    print("im here", payload)
     if payload["action"] == "account_history":
         return {
             "account": "nano_3cpz7oh9qr5b7obbcb5867omqf8esix4sdd5w6mh8kkknamjgbnwrimxsaaf",
@@ -107,6 +106,6 @@ def test_receive(mocker):
     assert data == {
         "nano_1ipx847tk8o46pwxt5qjdbncjqcbwcc1rrmqnkztrfjy5k7z4imsrata9est": {
             "amount": 30000.0,
-            "hash": "test_hash",
+            "hash": "20D5D6EA5CA355B11A0E3C11A74FBB4E91D126F4B3FD97232945D451A621E6F7",
         }
     }
