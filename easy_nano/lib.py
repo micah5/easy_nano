@@ -1,7 +1,9 @@
 import decimal
 import json
 import warnings
+import threading
 from typing import Optional, Dict
+from functools import partial
 
 import requests
 from nanolib import (
@@ -70,7 +72,7 @@ class Account:
             data = {"balance": 0}
         return data
 
-    def receive(self, count: Optional[int] = 5):
+    def receive(self, count: Optional[int] = 5, process_in_thread: bool = False):
         data = self._call_node_url(
             {"action": "pending", "account": self.public_address, "count": count}
         )
@@ -84,7 +86,18 @@ class Account:
             account_info = self._get_account_info(self.public_address)
             total_amount = amount + int(account_info["balance"])
             print(f"Received {mnano_amount} nano from {block_addr}. Processing...")
-            block_hash = self._receive_block(block_hash, total_amount, is_raw=True)
+            if process_in_thread:
+                t = threading.Thread(
+                    target=partial(
+                        self._receive_block,
+                        link=block_hash,
+                        amount=total_amount,
+                        is_raw=True,
+                    )
+                )
+                t.start()
+            else:
+                self._receive_block(block_hash, total_amount, is_raw=True)
             ret_data[block_addr] = {
                 "amount": mnano_amount,
                 "hash": block_hash,
