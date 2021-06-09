@@ -47,6 +47,8 @@ class Account:
         )
         self.node_url = node_url
         self.representative = representative
+        self.threads = {}
+        self.queue = []
 
     def _call_node_url(self, payload: Dict):
         res = requests.request("POST", self.node_url, data=payload)
@@ -77,27 +79,33 @@ class Account:
             {"action": "pending", "account": self.public_address, "count": count}
         )
         ret_data = {}
-        for block_hash in data["blocks"]:
+        for idx, block_hash in enumerate(data["blocks"]):
             block_info = self._get_block_info(block_hash)
             block_addr = block_info["block_account"]
             amount = int(block_info["amount"])
             mnano_amount = self._get_mnano_amount(amount)
             # todo: implement proper logging
-            account_info = self._get_account_info(self.public_address)
-            total_amount = amount + int(account_info["balance"])
             print(f"Received {mnano_amount} nano from {block_addr}. Processing...")
             if process_in_thread:
-                t = threading.Thread(
-                    target=partial(
-                        self._receive_block,
-                        link=block_hash,
-                        amount=total_amount,
-                        is_raw=True,
+                if block_hash in self.threads:
+                    print(f"Thread {block_hash} already running...")
+                else:
+                    self.threads[block_hash] = None
+                    t = threading.Thread(
+                        target=partial(
+                            self._receive_block,
+                            link=block_hash,
+                            amount=amount,
+                            is_raw=True,
+                            threading_enabled=True,
+                        )
                     )
-                )
-                t.start()
+                    if len(self.queue) == 0 and idx == 0:
+                        t.start()
+                    else:
+                        self.queue.append(t)
             else:
-                self._receive_block(block_hash, total_amount, is_raw=True)
+                self._receive_block(block_hash, amount, is_raw=True)
             ret_data[block_addr] = {
                 "amount": mnano_amount,
                 "hash": block_hash,
@@ -130,20 +138,35 @@ class Account:
         if not block.complete:
             raise Exception("Block not ready to be broadcast")
 
-    def _receive_block(self, link: str, amount: float, is_raw: bool = False):
+    def _receive_block(
+        self,
+        link: str,
+        amount: float,
+        is_raw: bool = False,
+        threading_enabled: bool = False,
+    ):
         previous = self._get_previous_block_hash()
         amount = amount if is_raw else self._get_raw_amount(amount)
+        account_info = self._get_account_info(self.public_address)
+        total_amount = amount + int(account_info["balance"])
         block = Block(
             block_type="state",
             account=self.public_address,
             representative=self.representative,
             previous=previous,
-            balance=amount,
+            balance=total_amount,
             link=link,
         )
         is_genesis_block = previous == "0" * 64
         self._prepare_block(block)
-        return self._process_block(block, "open" if is_genesis_block else "receive")
+        if threading_enabled:
+            self.threads[link] = block.to_dict()
+        res = self._process_block(block, "open" if is_genesis_block else "receive")
+        if threading_enabled:
+            if len(self.queue) > 0:
+                t = self.queue.pop()
+                t.start()
+        return res
 
     def _get_raw_amount(self, amount: float):
         """to prevent rounding errors"""
